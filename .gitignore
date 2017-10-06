@@ -1,0 +1,13 @@
+mbed-os/*
+.idea/*
+.mbed
+.mbedignore
+BUILD/
+arduino-base64/
+cmake-build-debug/
+dbgutil/
+mbed_app.json
+mbed_settings.py
+mbed_settings.pyc
+ubirch-mbed-nacl-cm0/
+mbed-os.lib
