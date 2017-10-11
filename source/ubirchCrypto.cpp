@@ -7,11 +7,11 @@
 #include <ctime>
 #include <nrf52.h>
 #include "ubirchCrypto.h"
-#include "../../dbgutil/dbgutil.h"
-#include "../arduino-base64/Base64.h"
+#include "Base64.h"
 
 #define KEY_HNDL_DBG 0
 
+#define PRINTF printf
 
 crypto::crypto() {}
 
@@ -123,7 +123,7 @@ bool crypto::verifySignature(const unsigned char *signature, const unsigned char
     return true;
 }
 
-unsigned char *crypto::provideKeyJson(void) {
+unsigned char *crypto::provideKeyJson() {
     PRINTF("\r\n>>>provideKeyJSON \r\n");
     // get the time of creation
     time_t timestamp = time(NULL);
@@ -245,14 +245,12 @@ unsigned char *crypto::provideKeyJson(void) {
 
 
 unsigned char *crypto::encodeMessageBase64(const unsigned char *message, uint16_t messageLength) {
-    int encodedLength = base64_enc_len(messageLength);
-    unsigned char *encodedMessage = new unsigned char[encodedLength + 1];
-    if (encodedLength == base64_encode((char *) (encodedMessage), (char *) (message), messageLength)) {
-        return encodedMessage;
-    } else {
-        PRINTF("ENCODING FAILED \r\n");
-        return NULL;
-    }
+    Base64 base64;
+
+    size_t encodedLength = 0;
+    char *encodedMessage = base64.Encode(reinterpret_cast<const char *>(message), messageLength, &encodedLength);
+
+    return reinterpret_cast<unsigned char *>(encodedMessage);
 }
 
 
@@ -271,14 +269,12 @@ const unsigned char *crypto::getBackendSignature() const {
 
 
 unsigned char *crypto::decodeMessageBase64(const unsigned char *message, uint16_t messageLength) {
-    int decodedLength = base64_dec_len((char *) (message), messageLength);
-    unsigned char *decodedMessage = new unsigned char[decodedLength + 1];
-    if (decodedLength == base64_decode((char *) (decodedMessage), (char *) (message), messageLength)) {
-        return decodedMessage;
-    } else {
-        PRINTF("DECODING FAILED\r\n");
-        return NULL;
-    }
+    Base64 base64;
+
+    size_t decodedLength = 0;
+    char *decodedMessage = base64.Decode(reinterpret_cast<const char *>(message), messageLength, &decodedLength);
+
+    return reinterpret_cast<unsigned char *>(decodedMessage);
 }
 
 bool crypto::importPublicKey(const unsigned char *publicKey) {

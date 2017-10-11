@@ -2,11 +2,10 @@
 // Created by wowa on 04.10.17.
 //
 
-#ifndef TRACKLE_FIRMWARE_UBIRCHCRYPTO_H
-#define TRACKLE_FIRMWARE_UBIRCHCRYPTO_H
+#ifndef UBIRCHCRYPTO_H
+#define UBIRCHCRYPTO_H
 
-#include <common.h>
-#include "../../ubirch-mbed-nacl-cm0/source/nacl/armnacl.h"
+#include <nacl/armnacl.h>
 
 class crypto {
 
@@ -27,7 +26,7 @@ public:
      *
      * @return  true
      */
-    bool createKeyPair(void);
+    bool createKeyPair();
 
     /*!
      * @brief   Sign a Message with the secret Key.
@@ -70,7 +69,7 @@ public:
      *
      * @note    The returned buffer has to be deleted after usage.
      */
-    unsigned char *provideKeyJson(void);
+    unsigned char *provideKeyJson();
 
     /*!
      * @brief       Encode a message with base64 encoding.
@@ -124,5 +123,5 @@ private:
 };
 
 
-#endif //TRACKLE_FIRMWARE_UBIRCHCRYPTO_H
+#endif //UBIRCHCRYPTO_H
 

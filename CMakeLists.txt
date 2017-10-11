@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
-project(ubirch_mbed_crypto)
 
+project(ubirch_mbed_crypto C CXX)
 set(CMAKE_CXX_STANDARD 98)
 
 # == MBED OS 5 settings ==
@@ -166,26 +166,18 @@ add_library(mbed-os ${MBED_OS_SRCS})
 include_directories(${MBED_OS})
 # == END MBED OS 5 ==
 
-add_library(crypto source/ubirchCrypto.cpp)
+include(ubirch-mbed-nacl-cm0/lib.cmake)
+
+add_library(crypto
+        source/ubirchCrypto.cpp
+        source/Base64.cpp
+        )
 target_include_directories(crypto PUBLIC source)
+target_link_libraries(crypto libnacl)
 
-add_library(base64 arduino-base64/Base64.cpp)
-target_include_directories(base64 PUBLIC arduino-base64)
-
-add_library(dbgutil dbgutil/dbgutil.c)
-target_include_directories(dbgutil PUBLIC dbgutil)
-
-add_library(nacl ubirch-mbed-nacl-cm0/source/nacl/armnacl.h)
-target_include_directories(nacl PUBLIC
-        ubirch-mbed-nacl-cm0
-        ubirch-mbed-nacl-cm0/source
-        ubirch-mbed-nacl-cm0/source/nacl)
-
-include(ubirch-mbed-nacl-cm0/lib.cmake
-        ubirch-mbed-nacl-cm0/mbed5.cmake)
 
 add_executable(test-nrf52-basic TESTS/crypto/basic/BasicCryptoTests.cpp)
-target_link_libraries(test-nrf52-basic mbed-os crypto base64 nacl)
+target_link_libraries(test-nrf52-basic mbed-os crypto)
 
 add_custom_target(run-tests ALL
         COMMAND mbed test -n tests-crypto*
