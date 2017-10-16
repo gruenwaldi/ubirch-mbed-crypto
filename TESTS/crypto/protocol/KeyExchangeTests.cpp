@@ -1,0 +1,136 @@
+/*
+ * Testing the key exchange protocol.
+ *
+ * @author Matthias L. Jugel
+ * @date 2017-10-15
+ *
+ * Copyright 2017 ubirch GmbH (https://ubirch.com)
+ *
+ * ```
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ```
+ */
+
+#include <unity/unity.h>
+#include <ubirchCrypto.h>
+#include <Base64.h>
+#include "mbed.h"
+
+#include "utest/utest.h"
+#include "greentea-client/test_env.h"
+#include "../../../ubirch-mbed-nacl-cm0/TESTS/testhelper.h"
+
+using namespace utest::v1;
+
+static const int messageLength = crypto_sign_PUBLICKEYBYTES + 4;
+static const size_t signedMessageLength = messageLength + crypto_sign_BYTES;
+
+// we need to read the server side data in slices, as sending too many characters fails
+void greentea_parse_kv_slice(char *k, char *v, int keySize, int valueSize, int sliceSize) {
+    memset(v, 0, sizeof(v));
+    char slice[sliceSize + 1];
+    do {
+        memset(slice, 0, sizeof(slice));
+        greentea_parse_kv(k, slice, keySize, sizeof(slice));
+        strcat(v, slice);
+    } while (strlen(slice) == sliceSize && strlen(v) < valueSize);
+}
+
+void TestCryptoKeyExchange() {
+    char k[48], v[255];
+    crypto device, server;
+    Base64 base64;
+    size_t b64Length;
+    char *encodedMessage;
+
+    TEST_ASSERT_TRUE_MESSAGE(device.createKeyPair(), "failed to create first key pair");
+
+    unsigned char deviceSignedDeviceMessage[signedMessageLength];
+    unsigned char deviceNone[4];
+    memset(deviceSignedDeviceMessage, 0, signedMessageLength);
+    memset(deviceNone, 0, 4);
+
+    // STEP 1 - send device message (Dpub, Dnonce) signed by device to server
+    printf("STEP 1 (D->S)\r\n");
+    randombytes(deviceNone, 4);
+    memcpy(deviceSignedDeviceMessage, device.getMyPublicKey(), crypto_sign_PUBLICKEYBYTES);
+    memcpy(deviceSignedDeviceMessage + crypto_sign_PUBLICKEYBYTES, deviceNone, 4);
+    // prepare complete signed device message, including the signature
+    unsigned char *deviceMessageSignature = device.signMessage(deviceSignedDeviceMessage, messageLength);
+    memcpy(deviceSignedDeviceMessage + messageLength, deviceMessageSignature, crypto_sign_BYTES);
+    delete deviceMessageSignature;
+    // encode message in base64 and send to server
+    encodedMessage = base64.Encode((const char *) deviceSignedDeviceMessage, signedMessageLength, &b64Length);
+    greentea_send_kv("deviceSignedDeviceMessage", encodedMessage);
+    delete encodedMessage;
+
+    // STEP 2 - receive server message (Spub, Snonce) signed by the server
+    printf("STEP 2 (S->D)\r\n");
+    greentea_parse_kv_slice(k, v, sizeof(k), sizeof(v), 30);
+    TEST_ASSERT_EQUAL_STRING("serverSignedServerMessage", k);
+    char *serverSignedServerMessage = base64.Decode(v, strlen(v), &b64Length);
+    server.importPublicKey((const unsigned char *) serverSignedServerMessage);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(signedMessageLength, b64Length, "server message length mismatch");
+    bool serverSignedServerMessageVerification = server.verifySignature(
+            (const unsigned char *) serverSignedServerMessage + messageLength,
+            (const unsigned char *) serverSignedServerMessage,
+            messageLength);
+    TEST_ASSERT_TRUE_MESSAGE(serverSignedServerMessageVerification, "message verification failed");
+
+    // STEP 3 - receive device message (Dpub, Dnonce) signed by server from server
+    printf("STEP 3 (S->D)\r\n");
+    greentea_parse_kv_slice(k, v, sizeof(k), sizeof(v), 30);
+    TEST_ASSERT_EQUAL_STRING("serverSignedDeviceMessage", k);
+    char *serverSignedDeviceMessage = base64.Decode(v, strlen(v), &b64Length);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(signedMessageLength, b64Length, "server message length mismatch");
+    TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(deviceSignedDeviceMessage, serverSignedDeviceMessage, messageLength,
+                                         "message changed");
+    bool serverSignedDeviceMessageVerification = server.verifySignature(
+            (const unsigned char *) serverSignedDeviceMessage + messageLength,
+            (const unsigned char *) serverSignedDeviceMessage,
+            messageLength);
+    TEST_ASSERT_TRUE_MESSAGE(serverSignedDeviceMessageVerification, "message verification failed");
+    delete serverSignedDeviceMessage;
+
+    // STEP 4 - send server message (Spub, Snonce) signed by device to server
+    printf("STEP 4 (D->S)\r\n");
+    unsigned char *deviceSignedServerMessage = (unsigned char *) serverSignedServerMessage;
+    unsigned char *serverMessageSignature = device.signMessage(deviceSignedServerMessage, messageLength);
+    memcpy(deviceSignedServerMessage + messageLength, serverMessageSignature, crypto_sign_BYTES);
+    delete serverMessageSignature;
+    // encode message in base64 and send to server
+    encodedMessage = base64.Encode((const char *) deviceSignedServerMessage, signedMessageLength, &b64Length);
+    greentea_send_kv("deviceSignedServerMessage", encodedMessage);
+    delete encodedMessage;
+    delete serverSignedServerMessage;
+
+    greentea_parse_kv(k, v, sizeof(k), sizeof(v));
+    TEST_ASSERT_EQUAL_STRING("serverVerification", k);
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("SUCCESS", v, "key exchange final step failed");
+}
+
+utest::v1::status_t greentea_test_setup(const size_t number_of_cases) {
+    GREENTEA_SETUP(600, "KeyExchangeTests");
+    return greentea_test_setup_handler(number_of_cases);
+}
+
+
+int main() {
+    Case cases[] = {
+//            Case("Crypto test long message", TestLongMessage, greentea_case_failure_abort_handler),
+            Case("Crypto test key exchange", TestCryptoKeyExchange, greentea_case_failure_abort_handler),
+    };
+
+    Specification specification(greentea_test_setup, cases, greentea_test_teardown_handler);
+    Harness::run(specification);
+}

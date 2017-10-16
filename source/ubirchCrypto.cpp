@@ -5,13 +5,12 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <nrf52.h>
 #include "ubirchCrypto.h"
 #include "Base64.h"
 
 #define KEY_HNDL_DBG 0
 
-#define PRINTF printf
+#define PRINTF(...)
 
 crypto::crypto() {}
 

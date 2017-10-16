@@ -67,10 +67,10 @@ void TestCryptoEncodeDecodeMessage() {
     }
     // encode the message
     unsigned char *encMessage = myCrypto.encodeMessageBase64(origMessage, messageLength);
-    TEST_ASSERT_TRUE_MESSAGE(*encMessage != NULL, "failed to encode message");
+    TEST_ASSERT_TRUE_MESSAGE(encMessage != NULL, "failed to encode message");
     // decode the message
     unsigned char *decMessage = myCrypto.decodeMessageBase64(encMessage, strlen((const char *) (encMessage)));
-    TEST_ASSERT_TRUE_MESSAGE(*decMessage != NULL, "failed to decode message");
+    TEST_ASSERT_TRUE_MESSAGE(decMessage != NULL, "failed to decode message");
     TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(origMessage, decMessage, messageLength,
                                          "data read does not match written data");
 
