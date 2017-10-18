@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(ubirch_mbed_crypto C CXX)
+project(ubirch-mbed-crypto C CXX)
 set(CMAKE_CXX_STANDARD 98)
 
 # == MBED OS 5 settings ==
@@ -170,6 +170,7 @@ include(ubirch-mbed-nacl-cm0/lib.cmake)
 
 add_library(crypto
         source/ubirchCrypto.cpp
+        source/KeyPair.cpp
         source/Base64.cpp
         )
 target_include_directories(crypto PUBLIC source)
@@ -178,6 +179,7 @@ target_link_libraries(crypto libnacl)
 
 add_executable(test-nrf52-basic
         TESTS/crypto/basic/BasicCryptoTests.cpp
+        TESTS/crypto/keys/KeyHandlingTests.cpp
         TESTS/crypto/protocol/KeyExchangeTests.cpp
         )
 target_link_libraries(test-nrf52-basic mbed-os crypto)
@@ -187,13 +189,13 @@ add_custom_target(run-tests ALL
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(debug-tests ALL
-        COMMAND mbed test -n tests-crypto* -vv --profile mbed-os/tools/profiles/debug.json
+        COMMAND mbed test -n tests-crypto-keys* -vv --profile mbed-os/tools/profiles/debug.json
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(debug-protocol-tests ALL
         COMMAND mbed test -n tests-crypto-protocol -vv --profile mbed-os/tools/profiles/debug.json
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-add_custom_target(compile-protocol-tests ALL
-        COMMAND mbed test -n tests-crypto-protocol --compile -vv --profile mbed-os/tools/profiles/debug.json
+add_custom_target(compile-tests ALL
+        COMMAND mbed test -n tests-crypto* --compile --profile mbed-os/tools/profiles/debug.json
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

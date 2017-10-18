@@ -107,7 +107,7 @@ public:
     
 private:
     void build_decoding_table();
-    char *decoding_table;
+    unsigned char *decoding_table;
 };
 
 #endif // BASE64_H

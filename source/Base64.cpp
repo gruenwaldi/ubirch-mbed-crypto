@@ -1,9 +1,10 @@
 /**
  * @file    Base64.cpp
- * @brief   Base64 encoding and decoding (DERIVED WORK)
+ * @brief   Base64 encoding and decoding (DERIVED WORK), fix some C++ warnings
  * @author  David Smart, Smartware Computing, Doug Anson ARM
+ * @author  Matthias L. Jugel, ubirch GmbH
  * @version 1.0
- * @see     
+ *
  *
  * Copyright (c) 2014
  *
@@ -39,7 +40,7 @@ typedef unsigned int uint32_t;
 #endif
 #include "Base64.h"
 
-static const char encoding_table[] = {
+static const unsigned char encoding_table[] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
     'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
     'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -68,14 +69,14 @@ char * Base64::Encode(const char *data, size_t input_length, size_t *output_leng
 {
     *output_length = 4 * ((input_length + 2) / 3);
 
-    char *encoded_data = (char *)malloc(*output_length+1);  // often used for text, so add room for NULL
+    char *encoded_data = new (std::nothrow) char[*output_length+1];  // often used for text, so add room for NULL
     if (encoded_data == NULL) return NULL;
 
     for (unsigned int i = 0, j = 0; i < input_length;) {
 
-        uint32_t octet_a = i < input_length ? data[i++] : 0;
-        uint32_t octet_b = i < input_length ? data[i++] : 0;
-        uint32_t octet_c = i < input_length ? data[i++] : 0;
+        uint32_t octet_a = (uint32_t) (i < input_length ? data[i++] : 0);
+        uint32_t octet_b = (uint32_t) (i < input_length ? data[i++] : 0);
+        uint32_t octet_c = (uint32_t) (i < input_length ? data[i++] : 0);
 
         uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
 
@@ -105,16 +106,15 @@ char * Base64::Decode(const char *data, size_t input_length, size_t *output_leng
     if (data[input_length - 1] == '=') (*output_length)--;
     if (data[input_length - 2] == '=') (*output_length)--;
 
-    char *decoded_data = (char *)malloc(*output_length+1);  // often used for text, so add room for NULL
-    if (decoded_data == NULL) 
-        return NULL;
+    char *decoded_data = new (std::nothrow) char[*output_length+1];  // often used for text, so add room for NULL
+    if (decoded_data == NULL)return NULL;
 
     for (unsigned int i = 0, j = 0; i < input_length;) {
 
-        uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
-        uint32_t sextet_b = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
-        uint32_t sextet_c = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
-        uint32_t sextet_d = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
+        uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table[(unsigned char)data[i++]];
+        uint32_t sextet_b = data[i] == '=' ? 0 & i++ : decoding_table[(unsigned char)data[i++]];
+        uint32_t sextet_c = data[i] == '=' ? 0 & i++ : decoding_table[(unsigned char)data[i++]];
+        uint32_t sextet_d = data[i] == '=' ? 0 & i++ : decoding_table[(unsigned char)data[i++]];
 
         uint32_t triple = (sextet_a << 3 * 6)
                           + (sextet_b << 2 * 6)
@@ -122,11 +122,11 @@ char * Base64::Decode(const char *data, size_t input_length, size_t *output_leng
                           + (sextet_d << 0 * 6);
 
         if (j < *output_length) 
-            decoded_data[j++] = (triple >> 2 * 8) & 0xFF;
+            decoded_data[j++] = static_cast<char>((triple >> 2 * 8) & 0xFF);
         if (j < *output_length) 
-            decoded_data[j++] = (triple >> 1 * 8) & 0xFF;
+            decoded_data[j++] = static_cast<char>((triple >> 1 * 8) & 0xFF);
         if (j < *output_length) 
-            decoded_data[j++] = (triple >> 0 * 8) & 0xFF;
+            decoded_data[j++] = static_cast<char>((triple >> 0 * 8) & 0xFF);
     }
     decoded_data[*output_length] = '\0';    // as a courtesy to text users
     return decoded_data;
@@ -135,8 +135,8 @@ char * Base64::Decode(const char *data, size_t input_length, size_t *output_leng
 
 void Base64::build_decoding_table()
 {
-    decoding_table = (char *)malloc(256);
+    decoding_table = new unsigned char[256];
 
-    for (int i = 0; i < 64; i++)
-        decoding_table[(unsigned char) encoding_table[i]] = i;
+    for (unsigned char i = 0; i < 64; i++)
+        decoding_table[encoding_table[i]] = i;
 }
