@@ -8,120 +8,9 @@
 #include "ubirchCrypto.h"
 #include "Base64.h"
 
-#define KEY_HNDL_DBG 0
+#define PRINTF(...)     printf(__VA_ARGS__)
 
-#define PRINTF(...)
-
-crypto::crypto() {}
-
-crypto::~crypto() {}
-
-bool crypto::createKeyPair(void) {
-
-    crypto_sign_keypair(myPublicKey, mySecretKey);
-    PRINTF("PubKey = ");
-#if (!NOPRINTF)
-    for (int i = 0; i < crypto_sign_PUBLICKEYBYTES; i++) {
-        PRINTF(" %2X", myPublicKey[i]);
-    }
-    PRINTF("\r\nSecKey = ");
-    for (int i = 0; i < crypto_sign_SECRETKEYBYTES; i++) {
-        PRINTF(" %2X", mySecretKey[i]);
-    }
-    PRINTF("\r\n");
-#endif
-    return true;
-}
-
-
-unsigned char *crypto::signMessage(const unsigned char *message, uint16_t messageLength) {
-    if ((message == NULL) || messageLength == 0){
-        PRINTF("ERROR: input buffer empty\r\n");
-        return NULL;
-    }
-    crypto_uint16 signedLength = messageLength + crypto_sign_BYTES;
-    unsigned char *signedMessage = new unsigned char[signedLength + 1];
-
-    // this function signs the message and returns the signature combined with the message [signature, message]
-    crypto_sign(signedMessage, &signedLength, message, (crypto_uint16) (messageLength), mySecretKey);
-
-    // extract the signature
-    unsigned char *signature = new unsigned char[crypto_sign_BYTES + 1];
-    memcpy(signature, signedMessage, crypto_sign_BYTES);
-    signature[crypto_sign_BYTES] = '\0';
-    delete signedMessage;
-
-#if (!NOPRINTF)
-    PRINTF("SIGNING MESSAGE \r\n");
-    PRINTF("message = ");
-    for (int i = 0; i < messageLength; i++) {
-        PRINTF(" %02X", message[i]);
-    }
-    PRINTF("\r\nSignature = ");
-    for (int i = 0; i < crypto_sign_BYTES; i++) {
-        PRINTF(" %02X", signature[i]);
-    }
-    PRINTF("\r\n");
-#endif
-
-    return signature;
-}
-
-unsigned char *crypto::signMessageEncoded(const unsigned char *message, uint16_t messageLength) {
-    // sign the message
-    unsigned char *signedMessage = this->signMessage(message, messageLength);
-    // encoded the signed message
-    uint16_t signedLength = strlen((const char *) (signedMessage));
-
-    return this->encodeMessageBase64(signedMessage, signedLength);
-}
-
-
-bool crypto::verifySignature(const unsigned char *signature, const unsigned char *message, uint16_t messageLength) {
-    if((signature == NULL) || (message == NULL) || (messageLength == 0)){
-        PRINTF("ERROR: empty input buffer or length = 0\r\n");
-        return false;
-    }
-    // create new buffer with complete message (signature + message)
-    crypto_uint16 fullMessageLength = crypto_sign_BYTES + messageLength;
-    unsigned char *fullMessage = new unsigned char[fullMessageLength + 1];
-    memcpy(fullMessage, signature, crypto_sign_BYTES);
-    memcpy((fullMessage + crypto_sign_BYTES), message, messageLength);
-    fullMessage[fullMessageLength] = '\0';
-    // create new buffer for the message to compare
-    unsigned char *compareMessage = new unsigned char[fullMessageLength + 1];
-    uint16_t compareLength;
-    // TODO check if backend key is available
-    int ret = crypto_sign_open(compareMessage, &compareLength, fullMessage, fullMessageLength, backendPublicKey);
-    if (ret == -1) { // TODO check this output
-        PRINTF("************************\r\n*** ERROR ***\r\n*******************\r\n");
-        return false;
-    } else {
-#if (!NOPRINTF)
-        PRINTF("VERIFYING SIGNATURE \r\n");
-        PRINTF("SignedMessage = ");
-        for (int i = 0; i < crypto_sign_BYTES; i++) {
-            PRINTF(" %02X", signature[i]);
-        }
-        PRINTF("\r\nmessage = ");
-        for (int i = 0; i < fullMessageLength; i++) {
-            PRINTF(" %02X", fullMessage[i]);
-        }
-        PRINTF("\r\n");
-#endif
-    }
-    // compare the length and the messages
-    ret = strncmp((const char*)(message), (const char*)(compareMessage), messageLength);
-//    PRINTF("\r\n##########\r\n ret = %d\r\n########\r\n", ret);
-    if(ret || (compareLength != messageLength)){
-        return false;
-    }
-    delete fullMessage;
-    delete compareMessage;
-
-    return true;
-}
-
+/*
 unsigned char *crypto::provideKeyJson() {
     PRINTF("\r\n>>>provideKeyJSON \r\n");
     // get the time of creation
@@ -236,53 +125,14 @@ unsigned char *crypto::provideKeyJson() {
     // TODO deallocate the memory, and add documentation
 
     return (unsigned char *) (message);
-    /*
+    */
+/*
      * TODO error management
-     */
+     *//*
+
     return NULL;
 }
-
-
-unsigned char *crypto::encodeMessageBase64(const unsigned char *message, uint16_t messageLength) {
-    Base64 base64;
-
-    size_t encodedLength = 0;
-    char *encodedMessage = base64.Encode(reinterpret_cast<const char *>(message), messageLength, &encodedLength);
-
-    return reinterpret_cast<unsigned char *>(encodedMessage);
-}
-
-
-const unsigned char *crypto::getMyPublicKey() const {
-    return myPublicKey;
-}
-
-const unsigned char *crypto::getBackendPublicKey() const {
-    return backendPublicKey;
-}
-
-const unsigned char *crypto::getBackendSignature() const {
-    return backendSignature;
-}
-
-
-
-unsigned char *crypto::decodeMessageBase64(const unsigned char *message, uint16_t messageLength) {
-    Base64 base64;
-
-    size_t decodedLength = 0;
-    char *decodedMessage = base64.Decode(reinterpret_cast<const char *>(message), messageLength, &decodedLength);
-
-    return reinterpret_cast<unsigned char *>(decodedMessage);
-}
-
-bool crypto::importPublicKey(const unsigned char *publicKey) {
-    if (publicKey == NULL) {
-        return false;
-    }
-    memcpy(backendPublicKey, publicKey, crypto_sign_PUBLICKEYBYTES);
-    return true;
-}
+*/
 
 
 

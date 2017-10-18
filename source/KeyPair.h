@@ -46,10 +46,21 @@ protected:
     PRIVATE *privateKey;
 
 public:
+    /**
+     * Initialize an empty key pair.
+     */
     KeyPair() : publicKey(NULL), privateKey(NULL) {};
 
+    /**
+     * Generate the public/private key pair using the
+     * configured algorithm.
+     */
     virtual void generate() = 0;
 
+    /**
+     * Get a pointer to the public key.
+     * @return a pointer to the public key.
+     */
     virtual PUBLIC *getPublicKey() = 0;
 };
 

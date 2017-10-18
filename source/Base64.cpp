@@ -69,7 +69,7 @@ char * Base64::Encode(const char *data, size_t input_length, size_t *output_leng
 {
     *output_length = 4 * ((input_length + 2) / 3);
 
-    char *encoded_data = new (std::nothrow) char[*output_length+1];  // often used for text, so add room for NULL
+    char *encoded_data = new char[*output_length+1];  // often used for text, so add room for NULL
     if (encoded_data == NULL) return NULL;
 
     for (unsigned int i = 0, j = 0; i < input_length;) {
@@ -106,7 +106,7 @@ char * Base64::Decode(const char *data, size_t input_length, size_t *output_leng
     if (data[input_length - 1] == '=') (*output_length)--;
     if (data[input_length - 2] == '=') (*output_length)--;
 
-    char *decoded_data = new (std::nothrow) char[*output_length+1];  // often used for text, so add room for NULL
+    char *decoded_data = new char[*output_length+1];  // often used for text, so add room for NULL
     if (decoded_data == NULL)return NULL;
 
     for (unsigned int i = 0, j = 0; i < input_length;) {
