@@ -24,7 +24,6 @@
 #include <unity/unity.h>
 #include <Base64.h>
 #include <KeyPair.h>
-#include "mbed.h"
 
 #include "utest/utest.h"
 #include "greentea-client/test_env.h"
@@ -36,14 +35,17 @@ static const int messageLength = crypto_sign_PUBLICKEYBYTES + 4;
 static const size_t signedMessageLength = messageLength + crypto_sign_BYTES;
 
 // we need to read the server side data in slices, as sending too many characters fails
-void greentea_parse_kv_slice(char *k, char *v, int keySize, int valueSize, int sliceSize) {
+void greentea_parse_kv_slice(char *k, char *v, const int keySize, const unsigned int valueSize,
+                             const unsigned int sliceSize) {
     memset(v, 0, sizeof(v));
-    char slice[sliceSize + 1];
+    char *slice = new char[sliceSize + 1];
     do {
-        memset(slice, 0, sizeof(slice));
-        greentea_parse_kv(k, slice, keySize, sizeof(slice));
+        memset(slice, 0, sliceSize);
+        greentea_parse_kv(k, slice, keySize, sliceSize + 1);
         strcat(v, slice);
+        printf("[%d] %s\r\n", (int) strlen(slice), slice);
     } while (strlen(slice) == sliceSize && strlen(v) < valueSize);
+    delete[] slice;
 }
 
 void TestCryptoKeyExchange() {

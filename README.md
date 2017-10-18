@@ -16,17 +16,28 @@ mbed test -n tests-crypto*
 +------------------+---------------+-----------------------+--------+--------------------+-------------+
 | target           | platform_name | test suite            | result | elapsed_time (sec) | copy_method |
 +------------------+---------------+-----------------------+--------+--------------------+-------------+
-| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-basic    | OK     | 86.66              | default     |
-| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-protocol | OK     | 27.92              | default     |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-base64   | OK     | 162.07             | default     |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | OK     | 157.56             | default     |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-protocol | OK     | 43.91              | default     |
 +------------------+---------------+-----------------------+--------+--------------------+-------------+
-+------------------+---------------+-----------------------+------------------------------------------------+--------+--------+--------+--------------------+
-| target           | platform_name | test suite            | test case                                      | passed | failed | result | elapsed_time (sec) |
-+------------------+---------------+-----------------------+------------------------------------------------+--------+--------+--------+--------------------+
-| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-basic    | Crypto test encode and decode message base64-0 | 1      | 0      | OK     | 0.18               |
-| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-basic    | Crypto test import backend key-0               | 1      | 0      | OK     | 0.06               |
-| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-basic    | Crypto test sign and verify message-0          | 10     | 0      | OK     | 6.25               |
-| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-protocol | Crypto test key exchange                       | 1      | 0      | OK     | 6.42               |
-+------------------+---------------+-----------------------+------------------------------------------------+--------+--------+--------+--------------------+
+mbedgt: test suite results: 3 OK
+mbedgt: test case report:
++------------------+---------------+-----------------------+------------------------------------------+--------+--------+--------+--------------------+
+| target           | platform_name | test suite            | test case                                | passed | failed | result | elapsed_time (sec) |
++------------------+---------------+-----------------------+------------------------------------------+--------+--------+--------+--------------------+
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-base64   | Base64 RFC 4648 test vectors             | 1      | 0      | OK     | 0.06               |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-base64   | Base64 size power of 2 test              | 4      | 0      | OK     | 36.48              |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-base64   | Base64 size power of 2+1 test            | 4      | 0      | OK     | 36.49              |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test generate keypair             | 1      | 0      | OK     | 3.18               |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test import keypair               | 1      | 0      | OK     | 0.06               |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test import keypair from arrays   | 1      | 0      | OK     | 0.07               |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test import public key from array | 1      | 0      | OK     | 0.07               |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test set keypair                  | 1      | 0      | OK     | 0.05               |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test sign message                 | 5      | 0      | OK     | 3.72               |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test sign/verify self             | 5      | 0      | OK     | 11.15              |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test verify message               | 10     | 0      | OK     | 5.3                |
+| NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-protocol | Crypto test key exchange                 | 1      | 0      | OK     | 20.44              |
++------------------+---------------+-----------------------+------------------------------------------+--------+--------+--------+--------------------+
 ```
 
 ### Key Exchange Test

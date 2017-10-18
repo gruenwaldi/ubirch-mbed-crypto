@@ -91,6 +91,20 @@ void TestGenerateKeyPair() {
                                          crypto_sign_PUBLICKEYBYTES, "public key does not match");
 }
 
+control_t TestSignAndVerifySelf(const size_t n) {
+    TestKeyPair testKeyPair;
+    testKeyPair.generate();
+
+    const char *plaintext = "The quick brown fox jumps over the lazy dog";
+    unsigned char *signature = testKeyPair.sign(reinterpret_cast<const unsigned char *>(plaintext), strlen(plaintext));
+    TEST_ASSERT_NOT_NULL(signature);
+
+    bool verified = testKeyPair.verify(reinterpret_cast<const unsigned char *>(plaintext), strlen(plaintext), signature);
+    TEST_ASSERT_TRUE_MESSAGE(verified, "message verification failed");
+
+    return (n < 5) ? CaseRepeatAll : CaseNext;
+}
+
 void TestImportKeyPair() {
     TestKeyPair testKeyPair;
     testKeyPair.import(testPublicKey, testPrivateKey);
@@ -183,7 +197,7 @@ control_t TestSignMessageStaticKey(const size_t repeated) {
     TEST_ASSERT_EQUAL_STRING("verify", k);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("OK", v, "signature verification failed");
 
-    return (repeated < 10) ? CaseRepeatAll : CaseNext;
+    return (repeated < 5) ? CaseRepeatAll : CaseNext;
 }
 
 
@@ -232,6 +246,7 @@ int main() {
             Case("Crypto test set keypair", TestLinkKeyPair, greentea_case_failure_abort_handler),
             Case("Crypto test sign message", TestSignMessageStaticKey, greentea_case_failure_abort_handler),
             Case("Crypto test verify message", TestVerifyMessageStaticKey, greentea_case_failure_abort_handler),
+            Case("Crypto test sign/verify self", TestSignAndVerifySelf, greentea_case_failure_abort_handler),
     };
 
     Specification specification(greentea_test_setup, cases, greentea_test_teardown_handler);

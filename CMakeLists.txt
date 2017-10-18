@@ -178,7 +178,7 @@ target_link_libraries(crypto libnacl)
 
 
 add_executable(test-nrf52-basic
-        TESTS/crypto/basic/BasicCryptoTests.cpp
+        TESTS/crypto/base64/Base64Tests.cpp
         TESTS/crypto/keys/KeyHandlingTests.cpp
         TESTS/crypto/protocol/KeyExchangeTests.cpp
         )
@@ -189,7 +189,7 @@ add_custom_target(run-tests ALL
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(debug-tests ALL
-        COMMAND mbed test -n tests-crypto-keys* -vv --profile mbed-os/tools/profiles/debug.json
+        COMMAND mbed test -n tests-crypto* -vv --profile mbed-os/tools/profiles/debug.json
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(debug-protocol-tests ALL
