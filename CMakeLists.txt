@@ -176,7 +176,6 @@ add_library(crypto
 target_include_directories(crypto PUBLIC source)
 target_link_libraries(crypto libnacl)
 
-
 add_executable(test-nrf52-basic
         TESTS/crypto/base64/Base64Tests.cpp
         TESTS/crypto/keys/KeyHandlingTests.cpp
@@ -184,18 +183,20 @@ add_executable(test-nrf52-basic
         )
 target_link_libraries(test-nrf52-basic mbed-os crypto)
 
+set(PROFILING --app-config TESTS/settings.json -vv)
+
 add_custom_target(run-tests ALL
-        COMMAND mbed test -n tests-crypto*
+        COMMAND mbed test -n tests-crypto* ${PROFILING}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(debug-tests ALL
-        COMMAND mbed test -n tests-crypto* -vv --profile mbed-os/tools/profiles/debug.json
+        COMMAND mbed test -n tests-crypto* -vv --profile mbed-os/tools/profiles/debug.json ${PROFILING}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(debug-protocol-tests ALL
-        COMMAND mbed test -n tests-crypto-protocol -vv --profile mbed-os/tools/profiles/debug.json
+        COMMAND mbed test -n tests-crypto-protocol -vv --profile mbed-os/tools/profiles/debug.json ${PROFILING}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(compile-tests ALL
-        COMMAND mbed test -n tests-crypto* --compile --profile mbed-os/tools/profiles/debug.json
+        COMMAND mbed test -n tests-crypto* --compile --profile mbed-os/tools/profiles/debug.json ${PROFILING}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

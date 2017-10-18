@@ -208,8 +208,8 @@ control_t TestVerifyMessageStaticKey(const size_t repeated) {
     TestKeyPair testKeyPair;
     testKeyPair.link(&testPublicKey, &testPrivateKey);
 
-    const char *message = "0123456789012345678901";
-    size_t len = strlen(message);
+    size_t len = random();
+    char *message = new char[len];
     randombytes((unsigned char *) message, len);
 
     char *encodedMessage = base64.Encode(message, len, &b64Length);
@@ -228,7 +228,7 @@ control_t TestVerifyMessageStaticKey(const size_t repeated) {
 
     delete[] signature;
 
-    return (repeated < 10) ? CaseRepeatAll : CaseNext;
+    return (repeated < 5) ? CaseRepeatAll : CaseNext;
 }
 
 utest::v1::status_t greentea_test_setup(const size_t number_of_cases) {

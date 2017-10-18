@@ -62,12 +62,12 @@ control_t TestBase64PowerOfTwo(const size_t n) {
 
     unsigned char *orig = new unsigned char[size];
     randombytes(orig, size);
-    printbytes("", orig, size); printf("\r\n");
+    printbytes("I", orig, size); printf("\r\n");
 
     size_t encodedLength, decodedLength;
     char *encoded = base64.Encode(reinterpret_cast<const char *>(orig), size, &encodedLength);
     char *decoded = base64.Decode(encoded, encodedLength, &decodedLength);
-    printbytes("", decoded, decodedLength); printf("\r\n");
+    printbytes("O", decoded, decodedLength); printf("\r\n");
 
     TEST_ASSERT_EQUAL_INT(size, decodedLength);
     TEST_ASSERT_EQUAL_HEX8_ARRAY(orig, decoded, size);
@@ -87,12 +87,12 @@ control_t TestBase64PowerOfTwoPlusOne(const size_t n) {
 
     unsigned char *orig = new unsigned char[size];
     randombytes(orig, size);
-    printbytes("", orig, size); printf("\r\n");
+    printbytes("I", orig, size); printf("\r\n");
 
     size_t encodedLength, decodedLength;
     char *encoded = base64.Encode(reinterpret_cast<const char *>(orig), size, &encodedLength);
     char *decoded = base64.Decode(encoded, encodedLength, &decodedLength);
-    printbytes("", decoded, decodedLength); printf("\r\n");
+    printbytes("O", decoded, decodedLength); printf("\r\n");
 
     TEST_ASSERT_EQUAL_INT(size, decodedLength);
     TEST_ASSERT_EQUAL_HEX8_ARRAY(orig, decoded, size);
