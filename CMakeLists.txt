@@ -183,7 +183,7 @@ add_executable(test-nrf52-basic
         )
 target_link_libraries(test-nrf52-basic mbed-os crypto)
 
-set(PROFILING --app-config TESTS/settings.json -vv)
+set(PROFILING --app-config TESTS/settings.json)
 
 add_custom_target(run-tests ALL
         COMMAND mbed test -n tests-crypto* ${PROFILING}
