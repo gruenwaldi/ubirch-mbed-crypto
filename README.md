@@ -37,7 +37,8 @@ mbedgt: test case report:
 | NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test sign/verify self             | 5      | 0      | OK     | 11.02              |
 | NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-keys     | Crypto test verify message               | 5      | 0      | OK     | 5.53               |
 | NRF52_DK-GCC_ARM | NRF52_DK      | tests-crypto-protocol | Crypto test key exchange                 | 1      | 0      | OK     | 20.45              |
-+------------------+---------------+-----------------------+------------------------------------------+--------+--------+--------+--------------------+```
++------------------+---------------+-----------------------+------------------------------------------+--------+--------+--------+--------------------+
+```
 
 ### Key Exchange Test
 
