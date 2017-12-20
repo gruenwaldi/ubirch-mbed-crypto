@@ -148,9 +148,9 @@ public:
      * @returns the signature
      * @returns NULL if the private key is not available
      */
-    unsigned char *sign(const unsigned char *message, size_t length);
+    ED25519Signature *sign(const unsigned char *message, size_t length);
 
-    bool verify(const unsigned char *message, size_t length, const unsigned char *signature);
+    bool verify(const unsigned char *message, size_t length, const ED25519Signature *signature);
 
 private:
     bool generated;

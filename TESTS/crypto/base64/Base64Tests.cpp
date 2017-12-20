@@ -106,7 +106,7 @@ control_t TestBase64PowerOfTwoPlusOne(const size_t n) {
 
 
 utest::v1::status_t greentea_test_setup(const size_t number_of_cases) {
-    GREENTEA_SETUP(150, "default_auto");
+    GREENTEA_SETUP(200, "default_auto");
     return greentea_test_setup_handler(number_of_cases);
 }
 

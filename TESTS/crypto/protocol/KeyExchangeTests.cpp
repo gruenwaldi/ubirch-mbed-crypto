@@ -38,14 +38,13 @@ static const size_t signedMessageLength = messageLength + crypto_sign_BYTES;
 void greentea_parse_kv_slice(char *k, char *v, const int keySize, const unsigned int valueSize,
                              const unsigned int sliceSize) {
     memset(v, 0, sizeof(v));
-    char *slice = new char[sliceSize + 1];
+    int idx = 0, len = 0;
     do {
-        memset(slice, 0, sliceSize);
-        greentea_parse_kv(k, slice, keySize, sliceSize + 1);
-        strcat(v, slice);
-        printf("[%d] %s\r\n", (int) strlen(slice), slice);
-    } while (strlen(slice) == sliceSize && strlen(v) < valueSize);
-    delete[] slice;
+        greentea_parse_kv(k, v+idx, keySize, sliceSize + 1);
+        len = strlen(v+idx);
+        idx += len;
+    } while (len == sliceSize && idx < valueSize);
+    printf("[%d] %s\r\n", (int) strlen(v), v);
 }
 
 void TestCryptoKeyExchange() {
@@ -69,7 +68,7 @@ void TestCryptoKeyExchange() {
     memcpy(deviceSignedDeviceMessage, deviceKey.getPublicKey()->key, crypto_sign_PUBLICKEYBYTES);
     memcpy(deviceSignedDeviceMessage + crypto_sign_PUBLICKEYBYTES, deviceNone, 4);
     // prepare complete signed device message, including the signature
-    unsigned char *deviceMessageSignature = deviceKey.sign(deviceSignedDeviceMessage, messageLength);
+    ED25519Signature *deviceMessageSignature = deviceKey.sign(deviceSignedDeviceMessage, messageLength);
     memcpy(deviceSignedDeviceMessage + messageLength, deviceMessageSignature, crypto_sign_BYTES);
     delete deviceMessageSignature;
     // encode message in base64 and send to server
@@ -88,7 +87,7 @@ void TestCryptoKeyExchange() {
     TEST_ASSERT_EQUAL_INT_MESSAGE(signedMessageLength, b64Length, "server message length mismatch");
     bool serverSignedServerMessageVerification = serverKey.verify(
             (const unsigned char *) serverSignedServerMessage, messageLength,
-            (const unsigned char *) serverSignedServerMessage + messageLength);
+            (ED25519Signature *) (serverSignedServerMessage + messageLength));
     TEST_ASSERT_TRUE_MESSAGE(serverSignedServerMessageVerification, "message verification failed");
 
     // STEP 3 - receive device message (Dpub, Dnonce) signed by server from server
@@ -101,14 +100,14 @@ void TestCryptoKeyExchange() {
                                          "message changed");
     bool serverSignedDeviceMessageVerification = serverKey.verify(
             (const unsigned char *) serverSignedDeviceMessage, messageLength,
-            (const unsigned char *) serverSignedDeviceMessage + messageLength);
+            (ED25519Signature *) (serverSignedDeviceMessage + messageLength));
     TEST_ASSERT_TRUE_MESSAGE(serverSignedDeviceMessageVerification, "message verification failed");
     free(serverSignedDeviceMessage);
 
     // STEP 4 - send server message (Spub, Snonce) signed by device to server
     printf("STEP 4 (D->S)\r\n");
     unsigned char *deviceSignedServerMessage = (unsigned char *) serverSignedServerMessage;
-    unsigned char *serverMessageSignature = deviceKey.sign(deviceSignedServerMessage, messageLength);
+    ED25519Signature *serverMessageSignature = deviceKey.sign(deviceSignedServerMessage, messageLength);
     memcpy(deviceSignedServerMessage + messageLength, serverMessageSignature, crypto_sign_BYTES);
     delete serverMessageSignature;
     // encode message in base64 and send to server
@@ -130,7 +129,6 @@ utest::v1::status_t greentea_test_setup(const size_t number_of_cases) {
 
 int main() {
     Case cases[] = {
-//            Case("Crypto test long message", TestLongMessage, greentea_case_failure_abort_handler),
             Case("Crypto test key exchange", TestCryptoKeyExchange, greentea_case_failure_abort_handler),
     };
 

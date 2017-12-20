@@ -37,14 +37,13 @@ using namespace utest::v1;
 void greentea_parse_kv_slice(char *k, char *v, const int keySize, const unsigned int valueSize,
                              const unsigned int sliceSize) {
     memset(v, 0, sizeof(v));
-    char *slice = new char[sliceSize + 1];
+    unsigned int idx = 0, len = 0;
     do {
-        memset(slice, 0, sliceSize);
-        greentea_parse_kv(k, slice, keySize, sliceSize + 1);
-        strcat(v, slice);
-        printf("[%d] %s\r\n", (int) strlen(slice), slice);
-    } while (strlen(slice) == sliceSize && strlen(v) < valueSize);
-    delete[] slice;
+        greentea_parse_kv(k, v+idx, keySize, sliceSize + 1);
+        len = strlen(v+idx);
+        idx += len;
+    } while (len == sliceSize && idx < valueSize);
+    printf("[%d] %s\r\n", (int) strlen(v), v);
 }
 
 // randomly generated Keys for testing
@@ -96,11 +95,13 @@ control_t TestSignAndVerifySelf(const size_t n) {
     testKeyPair.generate();
 
     const char *plaintext = "The quick brown fox jumps over the lazy dog";
-    unsigned char *signature = testKeyPair.sign(reinterpret_cast<const unsigned char *>(plaintext), strlen(plaintext));
+    ED25519Signature *signature = testKeyPair.sign(reinterpret_cast<const unsigned char *>(plaintext), strlen(plaintext));
     TEST_ASSERT_NOT_NULL(signature);
 
     bool verified = testKeyPair.verify(reinterpret_cast<const unsigned char *>(plaintext), strlen(plaintext), signature);
     TEST_ASSERT_TRUE_MESSAGE(verified, "message verification failed");
+
+    delete signature;
 
     return (n < 5) ? CaseRepeatAll : CaseNext;
 }
@@ -184,8 +185,9 @@ control_t TestSignMessageStaticKey(const size_t repeated) {
 
     char *message = new char[len + crypto_sign_BYTES];
     randombytes((unsigned char *) message, len);
-    unsigned char *signature = testKeyPair.sign(reinterpret_cast<const unsigned char *>(message), len);
-    memcpy((void *) (message + len), signature, crypto_sign_BYTES);
+    ED25519Signature *signature = testKeyPair.sign(reinterpret_cast<const unsigned char *>(message), len);
+    memcpy((void *) (message + len), signature->signature, crypto_sign_BYTES);
+    delete signature;
 
     char *encodedMessage = base64.Encode(message, len + crypto_sign_BYTES, &b64Length);
     delete message;
@@ -224,7 +226,7 @@ control_t TestVerifyMessageStaticKey(const size_t repeated) {
     printf("\r\n");
 
     TEST_ASSERT_EQUAL_INT_MESSAGE(64, b64Length, "signature length mismatch");
-    testKeyPair.verify(reinterpret_cast<const unsigned char *>(message), len, (const unsigned char *) signature);
+    testKeyPair.verify(reinterpret_cast<const unsigned char *>(message), len, (ED25519Signature *) signature);
 
     delete[] signature;
 

@@ -66,7 +66,7 @@ void ED25519KeyPair::import(const ED25519PublicKey &publicKey, const ED25519Priv
     generated = true;
 }
 
-unsigned char *ED25519KeyPair::sign(const unsigned char *message, size_t length) {
+ED25519Signature *ED25519KeyPair::sign(const unsigned char *message, size_t length) {
     if (privateKey == NULL) return NULL;
 
     // sign the message
@@ -77,14 +77,14 @@ unsigned char *ED25519KeyPair::sign(const unsigned char *message, size_t length)
                 privateKey->key);
 
     // extract the signature
-    unsigned char *signature = new unsigned char[crypto_sign_BYTES];
-    memcpy(signature, signedMessage, crypto_sign_BYTES);
+    ED25519Signature *signature = new ED25519Signature;
+    memcpy(signature->signature, signedMessage, crypto_sign_BYTES);
     delete[] signedMessage;
 
     return signature;
 }
 
-bool ED25519KeyPair::verify(const unsigned char *message, size_t length, const unsigned char *signature) {
+bool ED25519KeyPair::verify(const unsigned char *message, size_t length, const ED25519Signature *signature) {
     if(publicKey == NULL) return false;
     if ((message == NULL) || (length == 0) || (signature == NULL)) return false;
 
@@ -94,7 +94,7 @@ bool ED25519KeyPair::verify(const unsigned char *message, size_t length, const u
     unsigned char *signedMessage = new unsigned char[signedMessageLength];
     unsigned char *verifiedMessage = new unsigned char[signedMessageLength];
 
-    memcpy(signedMessage, signature, crypto_sign_BYTES);
+    memcpy(signedMessage, signature->signature, crypto_sign_BYTES);
     memcpy(signedMessage + crypto_sign_BYTES, message, length);
     memset(verifiedMessage, 0, signedMessageLength);
 

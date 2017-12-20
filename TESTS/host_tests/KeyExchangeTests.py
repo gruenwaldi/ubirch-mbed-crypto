@@ -73,6 +73,8 @@ class CryptoProtocolTests(BaseHostTest):
             self.send_kv("serverSignedServerMessage", encodedServerSignedServerMessage[pos:pos+30])
         self.log("SERVER ---------------(S[S])------------> DEVICE")
 
+        # give the device some time to digest before sending more data
+        sleep(5)
 
         # STEP 3 - send server signed device message
         serverSignature = self.private.sign(deviceMessage)
