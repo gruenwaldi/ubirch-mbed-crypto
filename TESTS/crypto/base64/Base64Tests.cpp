@@ -58,7 +58,7 @@ control_t TestBase64PowerOfTwo(const size_t n) {
     Base64 base64;
 
     unsigned int size = static_cast<unsigned int>(1024 << (n-1));
-    printf("BASE64: %d bytes\r\n", size);
+    printf("BASE64: %u bytes\r\n", size);
 
     unsigned char *orig = new unsigned char[size];
     randombytes(orig, size);

@@ -36,7 +36,7 @@ using namespace utest::v1;
 // we need to read the server side data in slices, as sending too many characters fails
 void greentea_parse_kv_slice(char *k, char *v, const int keySize, const unsigned int valueSize,
                              const unsigned int sliceSize) {
-    memset(v, 0, sizeof(v));
+    memset(v, 0, valueSize);
     unsigned int idx = 0, len = 0;
     do {
         greentea_parse_kv(k, v+idx, keySize, sliceSize + 1);
